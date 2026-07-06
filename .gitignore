@@ -1,23 +1,25 @@
-### AL ###
-#Template for AL projects for Dynamics 365 Business Central
-#launch.json folder
-.vscode/
-#Cache folder
-.alcache/
-#Symbols folder
-.alpackages/
-#Snapshots folder
-.snapshots/
-#Testing Output folder
-.output/
-#Extension App-file
-*.app
-#Rapid Application Development File
-rad.json
-#Translation Base-file
-*.g.xlf
-#License-files
-*.bclicense
-*.flf
-#Test results file
-TestResults.xml
+# General
+.DS_Store
+.localized
+__MACOSX/
+.AppleDouble
+.LSOverride
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Mac OS 6 to 9
+Desktop DB
+Desktop DF
+TheFindByContentFolder
+TheVolumeSettingsFolder
+.FBCIndex
+.FBCSemaphoreFile
+.FBCLockFolder
+
+# Database files
+*.db

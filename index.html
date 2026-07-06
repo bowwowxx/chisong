@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10162b">
+<meta name="description" content="手機上協助記憶背頌經文的工具">
+<title>持誦 · 金剛經與大悲咒背誦</title>
+<link rel="preload" href="data/vajra.json" as="fetch" crossorigin>
+<link rel="preload" href="data/dabei.json" as="fetch" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/app.js" defer></script>
+</head>
+<body>
+
+<header>
+  <div class="brand">持誦</div>
+  <div class="sutra-switch" role="tablist" aria-label="選擇經文">
+    <button id="sw-vajra" class="on">金剛經</button>
+    <button id="sw-dabei">大悲咒</button>
+  </div>
+</header>
+
+<main>
+  <!-- 誦讀 -->
+  <section class="view on" id="view-read">
+    <div class="readbar">
+      <button class="chipbtn" id="fontDown">縮小</button>
+      <button class="chipbtn" id="fontUp">放大</button>
+      <span class="sp"></span>
+      <span class="notice" id="readHint">向左滑動閱讀</span>
+    </div>
+    <div class="vpanel"><div class="vscroll"><div class="vtext" id="readText">載入中⋯</div></div></div>
+  </section>
+
+  <!-- 提取 -->
+  <section class="view" id="view-recall">
+    <div class="card" id="recallCard"></div>
+  </section>
+
+  <!-- 接縫 -->
+  <section class="view" id="view-seam">
+    <div class="togglerow">
+      <button class="toggle" id="boundaryOnly">只練段界</button>
+      <span id="seamInfo"></span>
+    </div>
+    <div class="card" id="seamCard"></div>
+  </section>
+
+  <!-- 辨異 -->
+  <section class="view" id="view-drill">
+    <div class="card" id="drillCard"></div>
+  </section>
+
+  <!-- 進度 -->
+  <section class="view" id="view-stats">
+    <div class="stats" id="statsBox"></div>
+  </section>
+</main>
+
+<nav>
+  <button data-v="read" class="on">誦讀</button>
+  <button data-v="recall">提取</button>
+  <button data-v="seam">接縫</button>
+  <button data-v="drill" id="navDrill" hidden>辨異</button>
+  <button data-v="stats">進度</button>
+</nav>
+
+</body>
+</html>

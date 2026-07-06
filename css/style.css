@@ -1,0 +1,183 @@
+:root{
+  --ink:#10162b;          /* 紺紙 */
+  --panel:#182040;
+  --panel2:#1e2850;
+  --gold:#d9bd7f;         /* 金泥 */
+  --gold-dim:#a08a5e;
+  --gold-line:rgba(217,189,127,.28);
+  --zhu:#c8502e;          /* 朱砂 */
+  --mut:#8f97b3;
+  --ok:#7fae7a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  background:var(--ink);
+  color:var(--gold);
+  /* iPhone 內建就有的宋體/明體優先，避免依賴未安裝字型；最後才 serif */
+  font-family:"Songti TC","Songti SC","PingFang TC","Noto Serif TC","Source Han Serif TC",serif;
+  display:flex;flex-direction:column;
+  /* iOS 動態視窗高度，避免用 100% 時面板塌陷 */
+  height:100vh;height:100dvh;
+  padding-bottom:env(safe-area-inset-bottom);
+  overflow:hidden;
+  -webkit-text-size-adjust:100%;
+}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ── 頂列：經別切換 ── */
+header{
+  padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border-bottom:1px solid var(--gold-line);
+}
+.brand{font-size:15px;letter-spacing:.35em;color:var(--gold-dim)}
+.sutra-switch{display:flex;border:1px solid var(--gold-line);border-radius:8px;overflow:hidden}
+.sutra-switch button{
+  background:none;border:none;color:var(--mut);
+  padding:8px 14px;font-size:15px;letter-spacing:.1em;
+}
+.sutra-switch button.on{background:var(--gold);color:var(--ink);font-weight:700}
+
+/* ── 主區 ── */
+/* min-height:0 讓 iOS Safari 能正確解析 flex 子項高度，否則直式經文面板會塌成 0 高、文字看不到 */
+main{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.view{flex:1;min-height:0;display:none;flex-direction:column;overflow:hidden}
+.view.on{display:flex}
+
+/* 直式經文面板（雙線金框，呼應經本邊框） */
+.vpanel{
+  flex:1;min-height:0;margin:12px;position:relative;overflow:hidden;
+  border:1px solid var(--gold-line);border-radius:4px;
+  box-shadow:inset 0 0 0 3px var(--ink), inset 0 0 0 4px var(--gold-line);
+  background:var(--panel);
+}
+.vscroll{
+  position:absolute;inset:10px;
+  overflow-x:auto;overflow-y:hidden;
+  display:flex;justify-content:flex-start;
+}
+.vtext{
+  writing-mode:vertical-rl;
+  height:100%;
+  font-size:22px;line-height:2.0;
+  letter-spacing:.12em;
+  padding:8px 4px;
+  color:var(--gold);
+}
+.vtext .segbreak{display:inline-block;height:1.6em}
+.vtext .segno{color:var(--zhu);font-size:.6em;letter-spacing:0}
+
+/* 誦讀工具列 */
+.readbar{display:flex;gap:8px;padding:0 12px 8px;align-items:center}
+.readbar .sp{flex:1}
+.chipbtn{
+  background:none;border:1px solid var(--gold-line);color:var(--gold-dim);
+  border-radius:8px;padding:7px 12px;font-size:14px;
+}
+
+/* ── 練習卡 ── */
+.card{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+}
+.meta{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 16px 0;color:var(--mut);font-size:13px;letter-spacing:.08em;
+}
+.meta .tag{color:var(--zhu)}
+.cuewrap{padding:10px 16px 0}
+.cue{
+  border-right:2px solid var(--zhu);
+  padding:2px 10px 2px 0;margin-left:auto;
+  writing-mode:vertical-rl;max-height:130px;overflow:hidden;
+  font-size:18px;line-height:1.9;color:var(--gold-dim);
+  float:right;
+}
+.cuelabel{font-size:12px;color:var(--mut);text-align:right;padding:0 16px;letter-spacing:.2em}
+.answrap{flex:1;margin:10px 12px;position:relative;min-height:0}
+.ansmask,.ansreveal{
+  position:absolute;inset:0;border-radius:4px;
+  border:1px solid var(--gold-line);
+  box-shadow:inset 0 0 0 3px var(--ink), inset 0 0 0 4px var(--gold-line);
+  background:var(--panel);
+}
+.ansmask{
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;
+  color:var(--mut);font-size:15px;letter-spacing:.3em;
+}
+.ansmask .hintchar{font-size:34px;color:var(--gold-dim);letter-spacing:0}
+.ansreveal{display:none;overflow:hidden}
+.ansreveal .vscroll{inset:8px}
+.showing .ansmask{display:none}
+.showing .ansreveal{display:block}
+
+/* 按鈕列 */
+.actions{display:flex;gap:10px;padding:10px 12px 14px}
+.actions button{
+  flex:1;border:none;border-radius:10px;padding:15px 0;
+  font-size:17px;letter-spacing:.25em;font-weight:700;
+}
+.flipbtn{background:var(--gold);color:var(--ink)}
+.g-again{background:var(--zhu);color:#fff}
+.g-hard{background:var(--panel2);color:var(--gold);border:1px solid var(--gold-line)!important}
+.g-good{background:var(--gold);color:var(--ink)}
+.gradebar{display:none}
+
+/* 辨異選項 */
+.opts{display:flex;flex-direction:column;gap:10px;padding:6px 16px;overflow-y:auto}
+.opt{
+  background:var(--panel);border:1px solid var(--gold-line);color:var(--gold);
+  border-radius:10px;padding:14px;font-size:18px;letter-spacing:.1em;text-align:center;
+}
+.opt.right{background:var(--gold);color:var(--ink);font-weight:700}
+.opt.wrong{background:var(--zhu);color:#fff}
+.opt:disabled{opacity:.9}
+
+/* 完成畫面 */
+.done{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  color:var(--gold-dim);letter-spacing:.3em;font-size:16px;
+}
+.done .big{font-size:26px;color:var(--gold)}
+
+/* 進度 */
+.stats{padding:18px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.statrow{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px dashed var(--gold-line);padding-bottom:10px;
+}
+.statrow .k{color:var(--mut);font-size:14px;letter-spacing:.15em}
+.statrow .v{font-size:20px}
+.danger{
+  margin-top:8px;background:none;border:1px solid var(--zhu);color:var(--zhu);
+  border-radius:10px;padding:12px;font-size:15px;letter-spacing:.2em;
+}
+.notice{color:var(--mut);font-size:12px;line-height:1.8;letter-spacing:.05em}
+
+/* 底部分頁 */
+nav{
+  display:flex;border-top:1px solid var(--gold-line);
+  padding-bottom:env(safe-area-inset-bottom);background:var(--ink);
+}
+nav button{
+  flex:1;background:none;border:none;color:var(--mut);
+  padding:12px 0 10px;font-size:14px;letter-spacing:.2em;
+}
+nav button.on{color:var(--gold)}
+nav button.on::after{content:"";display:block;width:22px;height:2px;background:var(--zhu);margin:5px auto 0}
+nav button:not(.on)::after{content:"";display:block;height:2px;margin:5px auto 0}
+nav button[hidden]{display:none}
+
+/* 段界切換 */
+.togglerow{display:flex;align-items:center;gap:8px;padding:8px 16px 0;color:var(--mut);font-size:13px}
+.toggle{
+  border:1px solid var(--gold-line);border-radius:999px;padding:5px 12px;
+  background:none;color:var(--mut);font-size:13px;letter-spacing:.1em;
+}
+.toggle.on{color:var(--ink);background:var(--gold);border-color:var(--gold)}
+
+@media (prefers-reduced-motion: no-preference){
+  .ansreveal{animation:fadein .18s ease}
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+}
