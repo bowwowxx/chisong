@@ -56,6 +56,14 @@
 
 不需要任何 build 流程或 Actions。
 
+## 全螢幕體驗
+
+已加入跨平台 meta tags，在手機瀏覽器中「加到主畫面」後可全螢幕運行，像原生 App 一樣：
+
+- `apple-mobile-web-app-capable` — iOS Safari 全螢幕
+- `apple-mobile-web-app-status-bar-style` — iOS 狀態列樣式
+- `mobile-web-app-capable` — Android Chrome 全螢幕
+
 ## 本機預覽
 
 經文用 `fetch()` 載入，直接雙擊 `index.html`（`file://`）會被瀏覽器擋下。起個簡單的 http 伺服器即可：
