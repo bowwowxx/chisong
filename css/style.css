@@ -61,12 +61,24 @@ main{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 .vtext{
   writing-mode:vertical-rl;
   height:100%;
+  /* 內容未超寬時靠右（直排起讀邊）；超寬時 auto margin 歸零，維持可捲動 */
+  margin-left:auto;
   font-size:22px;line-height:2.0;
   letter-spacing:.12em;
   padding:8px 4px;
   color:var(--gold);
 }
 .vtext .segbreak{display:inline-block;height:1.6em}
+/* 捲動時最右可見行以朱砂標示（--g1/--g2 由 JS 依捲動位置更新） */
+.vtext.scrolling{
+  color:transparent;
+  background-image:linear-gradient(to right,
+    var(--gold) 0, var(--gold) var(--g1,0px),
+    var(--zhu) var(--g1,0px), var(--zhu) var(--g2,0px),
+    var(--gold) var(--g2,0px));
+  -webkit-background-clip:text;
+  background-clip:text;
+}
 .vtext .segno{color:var(--zhu);font-size:.6em;letter-spacing:0}
 
 /* 誦讀工具列 */

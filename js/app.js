@@ -349,6 +349,49 @@ document.getElementById("boundaryOnly").onclick = function(){
 document.getElementById("fontUp").onclick = () => { readFont = Math.min(30, readFont + 2); renderRead(); };
 document.getElementById("fontDown").onclick = () => { readFont = Math.max(16, readFont - 2); renderRead(); };
 
+/* ══════════ 桌機捲動與首行標示 ══════════ */
+/* 滾輪：垂直滾動轉為水平翻閱（直排由右向左，滾輪向下＝前進） */
+document.addEventListener("wheel", e => {
+  if(!(e.target instanceof Element)) return;
+  const sc = e.target.closest(".vscroll");
+  if(!sc || sc.scrollWidth <= sc.clientWidth) return;
+  if(Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+  e.preventDefault();
+  sc.scrollLeft -= e.deltaY;
+}, {passive:false});
+
+/* 方向鍵：← 前進、→ 後退 */
+document.addEventListener("keydown", e => {
+  if(e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const sc = document.querySelector(".view.on .vscroll");
+  if(!sc || sc.scrollWidth <= sc.clientWidth) return;
+  e.preventDefault();
+  const step = Math.max(80, Math.round(sc.clientWidth * 0.8));
+  sc.scrollBy({left: e.key === "ArrowLeft" ? -step : step, behavior:"smooth"});
+});
+
+/* 捲動時最右可見行（目前讀到的行）以朱砂呈現，停止後回復金色 */
+let hlVt = null, hlTimer = null;
+document.addEventListener("scroll", e => {
+  const sc = e.target;
+  if(!(sc instanceof Element) || !sc.classList.contains("vscroll")) return;
+  const vt = sc.querySelector(".vtext");
+  if(!vt || sc.scrollWidth <= sc.clientWidth) return;
+  const cs = getComputedStyle(vt);
+  const colW = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 2;
+  const pad = parseFloat(cs.paddingRight) || 0;
+  const edge = Math.min(sc.scrollLeft + sc.clientWidth - vt.offsetLeft, vt.offsetWidth);
+  const k = Math.max(0, Math.ceil((vt.offsetWidth - edge - pad) / colW));
+  const g2 = vt.offsetWidth - pad - k * colW;
+  vt.style.setProperty("--g1", (g2 - colW) + "px");
+  vt.style.setProperty("--g2", g2 + "px");
+  if(hlVt && hlVt !== vt) hlVt.classList.remove("scrolling");
+  hlVt = vt;
+  vt.classList.add("scrolling");
+  clearTimeout(hlTimer);
+  hlTimer = setTimeout(() => vt.classList.remove("scrolling"), 900);
+}, true);
+
 /* ══════════ 啟動：兩份經文平行載入，金剛經到了立刻先畫 ══════════ */
 fetchSutra("vajra")
   .then(() => { if(cur === "vajra") render(curView); })
