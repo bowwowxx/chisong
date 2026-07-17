@@ -82,12 +82,15 @@ main{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 .vtext .segno{color:var(--zhu);font-size:.6em;letter-spacing:0}
 
 /* 誦讀工具列 */
-.readbar{display:flex;gap:8px;padding:0 12px 8px;align-items:center}
+.readbar{display:flex;gap:8px;padding:0 12px 8px;align-items:center;flex-wrap:wrap}
 .readbar .sp{flex:1}
 .chipbtn{
   background:none;border:1px solid var(--gold-line);color:var(--gold-dim);
   border-radius:8px;padding:7px 12px;font-size:14px;
 }
+.chipbtn.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+#fishBtn{transition:transform .15s}
+#fishBtn.hit{transform:scale(.9)}
 
 /* ── 練習卡 ── */
 .card{
@@ -161,6 +164,10 @@ main{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 }
 .statrow .k{color:var(--mut);font-size:14px;letter-spacing:.15em}
 .statrow .v{font-size:20px}
+.fishadj{
+  background:none;border:1px solid var(--gold-line);color:var(--gold-dim);
+  border-radius:6px;padding:3px 8px;font-size:13px;margin-left:8px;
+}
 .danger{
   margin-top:8px;background:none;border:1px solid var(--zhu);color:var(--zhu);
   border-radius:10px;padding:12px;font-size:15px;letter-spacing:.2em;

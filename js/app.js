@@ -91,6 +91,7 @@ function esc(s){ return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
 /* ══════════ 誦讀 ══════════ */
 function renderRead(){
   const el = document.getElementById("readText");
+  fishLabel();
   if(!dataReady[cur]){ el.textContent = "載入中⋯"; return; }
   const s = SUTRAS[cur];
   el.style.fontSize = readFont + "px";
@@ -304,9 +305,13 @@ function renderStats(){
     html += `<div class="statrow"><span class="k">${label}</span><span class="v">${seen} / ${all.length}<span style="color:var(--zhu);font-size:14px">　待複習 ${due}</span></span></div>`;
   }
   boundaryOnly = savedBoundary;
+  const f = FISH[cur] || {t:0, d:0, n:0};
+  html += `<div class="statrow"><span class="k">木魚（誦畢遍數）</span><span class="v">今日 ${f.d === today() ? f.n : 0}<span style="color:var(--mut);font-size:14px">　累計 ${f.t}</span><button class="fishadj" id="fishPlus">+1</button><button class="fishadj" id="fishMinus">−1</button></span></div>`;
   html += `<div class="notice">進度依「忘了／模糊／記得」自動排程：熟的間隔拉長，生的密集重考。每天打開先清「待複習」，再吃少量新題。</div>`;
   html += `<button class="danger" id="resetBtn">清除本經全部進度</button>`;
   box.innerHTML = html;
+  document.getElementById("fishPlus").onclick = () => { fishAdd(1); renderStats(); };
+  document.getElementById("fishMinus").onclick = () => { fishAdd(-1); renderStats(); };
   document.getElementById("resetBtn").onclick = () => {
     if(!confirm(`確定清除「${s.name}」的練習進度？此動作無法復原。`)) return;
     for(const id of Object.keys(PROG)) if(id.startsWith(cur + "-")) delete PROG[id];
@@ -389,6 +394,82 @@ document.addEventListener("scroll", e => {
   hlVt = vt;
   vt.classList.add("scrolling");
 }, true);
+
+/* ══════════ 自動捲經 ══════════ */
+const AUTO_SPEEDS = [["慢", 5], ["中", 10], ["快", 20]];   // px/秒
+let autoOn = false, autoSpeed = 1, autoRAF = 0, autoPos = 0, autoPrev = 0;
+const autoBtn = document.getElementById("autoBtn");
+const speedBtn = document.getElementById("speedBtn");
+function autoStep(ts){
+  const sc = document.querySelector("#view-read .vscroll");
+  if(!sc || sc.scrollWidth <= sc.clientWidth){ stopAuto(); return; }
+  const dt = Math.min(100, ts - autoPrev); autoPrev = ts;
+  /* 手動捲動（滑動/滾輪）後，從新位置續捲 */
+  if(Math.abs(sc.scrollLeft - autoPos) > 2) autoPos = sc.scrollLeft;
+  autoPos -= AUTO_SPEEDS[autoSpeed][1] * dt / 1000;
+  sc.scrollLeft = autoPos;
+  if(autoPos <= 0){ stopAuto(); return; }   // 捲到卷尾自動停
+  autoRAF = requestAnimationFrame(autoStep);
+}
+function startAuto(){
+  autoOn = true;
+  autoBtn.classList.add("on");
+  speedBtn.hidden = false;
+  autoPrev = performance.now();
+  const sc = document.querySelector("#view-read .vscroll");
+  autoPos = sc ? sc.scrollLeft : 0;
+  autoRAF = requestAnimationFrame(autoStep);
+}
+function stopAuto(){
+  autoOn = false;
+  cancelAnimationFrame(autoRAF);
+  autoBtn.classList.remove("on");
+  speedBtn.hidden = true;
+}
+autoBtn.onclick = () => autoOn ? stopAuto() : startAuto();
+speedBtn.onclick = () => {
+  autoSpeed = (autoSpeed + 1) % AUTO_SPEEDS.length;
+  speedBtn.textContent = AUTO_SPEEDS[autoSpeed][0];
+};
+
+/* ══════════ 木魚計數 ══════════ */
+const FKEY = "chisong-fish-v1";
+const FISH = store.get(FKEY) || {};   // {sutra:{t:累計, d:當日日期, n:當日遍數}}
+const fishBtn = document.getElementById("fishBtn");
+let audioCtx = null;
+function knock(){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+    osc.frequency.setValueAtTime(880, t);
+    osc.frequency.exponentialRampToValueAtTime(440, t + .08);
+    g.gain.setValueAtTime(.5, t);
+    g.gain.exponentialRampToValueAtTime(.001, t + .12);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + .12);
+  }catch(e){}
+}
+function fishLabel(){
+  const f = FISH[cur];
+  fishBtn.textContent = "木魚 " + (f && f.d === today() ? f.n : 0);
+}
+function fishAdd(d){
+  const f = FISH[cur] || {t:0, d:today(), n:0};
+  if(f.d !== today()){ f.d = today(); f.n = 0; }
+  f.t = Math.max(0, f.t + d);
+  f.n = Math.max(0, f.n + d);
+  FISH[cur] = f;
+  store.set(FKEY, FISH);
+}
+fishBtn.onclick = () => {
+  fishAdd(1);
+  knock();
+  fishLabel();
+  fishBtn.classList.add("hit");
+  setTimeout(() => fishBtn.classList.remove("hit"), 150);
+};
 
 /* ══════════ 啟動：兩份經文平行載入，金剛經到了立刻先畫 ══════════ */
 fetchSutra("vajra")
