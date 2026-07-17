@@ -370,8 +370,8 @@ document.addEventListener("keydown", e => {
   sc.scrollBy({left: e.key === "ArrowLeft" ? -step : step, behavior:"smooth"});
 });
 
-/* 捲動時最右可見行（目前讀到的行）以朱砂呈現，停止後回復金色 */
-let hlVt = null, hlTimer = null;
+/* 最右可見行（目前讀到的行）以朱砂呈現，停止捲動後仍持續標示 */
+let hlVt = null;
 document.addEventListener("scroll", e => {
   const sc = e.target;
   if(!(sc instanceof Element) || !sc.classList.contains("vscroll")) return;
@@ -388,8 +388,6 @@ document.addEventListener("scroll", e => {
   if(hlVt && hlVt !== vt) hlVt.classList.remove("scrolling");
   hlVt = vt;
   vt.classList.add("scrolling");
-  clearTimeout(hlTimer);
-  hlTimer = setTimeout(() => vt.classList.remove("scrolling"), 900);
 }, true);
 
 /* ══════════ 啟動：兩份經文平行載入，金剛經到了立刻先畫 ══════════ */
