@@ -158,6 +158,7 @@ main{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 
 /* 進度 */
 .stats{padding:18px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.stats-title{color:var(--gold);font-size:18px;letter-spacing:.3em;text-align:center;padding-bottom:4px}
 .statrow{
   display:flex;justify-content:space-between;align-items:baseline;
   border-bottom:1px dashed var(--gold-line);padding-bottom:10px;
@@ -167,6 +168,11 @@ main{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 .fishadj{
   background:none;border:1px solid var(--gold-line);color:var(--gold-dim);
   border-radius:6px;padding:3px 8px;font-size:13px;margin-left:8px;
+}
+.backuprow{display:flex;gap:10px}
+.backuprow button{
+  flex:1;background:none;border:1px solid var(--gold-line);color:var(--gold-dim);
+  border-radius:10px;padding:12px;font-size:15px;letter-spacing:.2em;
 }
 .danger{
   margin-top:8px;background:none;border:1px solid var(--zhu);color:var(--zhu);

@@ -16,6 +16,7 @@ function fetchSutra(key){
       RAW[key] = json;
       SUTRAS[key] = buildSutra(key, json);
       dataReady[key] = true;
+      document.getElementById("sw-" + key).textContent = json.name;
     });
 }
 
@@ -296,7 +297,7 @@ function renderStats(){
   const s = SUTRAS[cur];
   const modes = [["recall", "提取（段）"], ["seam", "接縫（句）"]];
   if(cur === "dabei") modes.push(["drill", "辨異"]);
-  let html = "";
+  let html = `<div class="stats-title">《${s.name}》進度</div>`;
   const savedBoundary = boundaryOnly; boundaryOnly = false;
   for(const [m, label] of modes){
     const all = itemsFor(m);
@@ -308,10 +309,13 @@ function renderStats(){
   const f = FISH[cur] || {t:0, d:0, n:0};
   html += `<div class="statrow"><span class="k">木魚（誦畢遍數）</span><span class="v">今日 ${f.d === today() ? f.n : 0}<span style="color:var(--mut);font-size:14px">　累計 ${f.t}</span><button class="fishadj" id="fishPlus">+1</button><button class="fishadj" id="fishMinus">−1</button></span></div>`;
   html += `<div class="notice">進度依「忘了／模糊／記得」自動排程：熟的間隔拉長，生的密集重考。每天打開先清「待複習」，再吃少量新題。</div>`;
+  html += `<div class="backuprow"><button id="bakExport">匯出備份</button><button id="bakImport">匯入備份</button></div>`;
   html += `<button class="danger" id="resetBtn">清除本經全部進度</button>`;
   box.innerHTML = html;
   document.getElementById("fishPlus").onclick = () => { fishAdd(1); renderStats(); };
   document.getElementById("fishMinus").onclick = () => { fishAdd(-1); renderStats(); };
+  document.getElementById("bakExport").onclick = exportBackup;
+  document.getElementById("bakImport").onclick = importBackup;
   document.getElementById("resetBtn").onclick = () => {
     if(!confirm(`確定清除「${s.name}」的練習進度？此動作無法復原。`)) return;
     for(const id of Object.keys(PROG)) if(id.startsWith(cur + "-")) delete PROG[id];
@@ -319,6 +323,40 @@ function renderStats(){
     Object.keys(queues).forEach(k => { if(k.startsWith(cur + "-")) delete queues[k]; });
     renderStats();
   };
+}
+
+/* ══════════ 備份／還原 ══════════ */
+function exportBackup(){
+  const payload = {
+    app: "chisong",
+    exported: new Date().toISOString(),
+    data: {[PKEY]: store.get(PKEY), [FKEY]: store.get(FKEY)}
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "chisong-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importBackup(){
+  const inp = document.createElement("input");
+  inp.type = "file";
+  inp.accept = "application/json,.json";
+  inp.onchange = () => {
+    const file = inp.files[0];
+    if(!file) return;
+    file.text().then(txt => {
+      const p = JSON.parse(txt);
+      if(!p || p.app !== "chisong" || typeof p.data !== "object" || p.data === null) throw new Error("bad");
+      if(!confirm("匯入備份會覆蓋目前的練習進度與木魚計數，確定？")) return;
+      for(const [k, v] of Object.entries(p.data)){
+        if(k.startsWith("chisong-") && v != null) store.set(k, v);
+      }
+      location.reload();
+    }).catch(() => alert("備份檔格式不正確，未做任何變更。"));
+  };
+  inp.click();
 }
 
 /* ══════════ 導覽 ══════════ */
@@ -481,3 +519,8 @@ fetchSutra("vajra")
 fetchSutra("dabei")
   .then(() => { if(cur === "dabei") render(curView); })
   .catch(() => {});
+
+/* ══════════ Service Worker：離線快取（需 https 或 localhost） ══════════ */
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
