@@ -58,7 +58,7 @@ main{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 }
 .vtext{
   writing-mode:vertical-rl;
-  /* 不以正交 flex item 計算行高，避免新版 WebKit 放大後裁掉行尾。 */
+  /* JS 會用捲動框的 clientHeight 覆寫高度，避開 iOS 27 直排百分比高度錯算。 */
   width:max-content;min-width:100%;
   height:calc(100% - 1px);
   margin:0;

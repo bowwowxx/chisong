@@ -89,6 +89,33 @@ const queues = {};   // per sutra+mode session queue
 
 function esc(s){ return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
 
+/* iOS Safari 在直排 writing-mode 中會錯算百分比高度；改用捲動框的實際像素高度。 */
+const observedVscrolls = new WeakSet();
+const vtextResizeObserver = typeof ResizeObserver === "function"
+  ? new ResizeObserver(entries => entries.forEach(e => fitVerticalScroller(e.target)))
+  : null;
+
+function fitVerticalScroller(sc){
+  /* 誦讀頁的捲動框長期存在；練習卡會一直替換，不交給 observer 留存。 */
+  if(vtextResizeObserver && sc.closest("#view-read") && !observedVscrolls.has(sc)){
+    observedVscrolls.add(sc);
+    vtextResizeObserver.observe(sc);
+  }
+  const vt = sc.querySelector(".vtext");
+  const h = sc.clientHeight;
+  if(!vt || h <= 0) return;
+  const px = Math.max(1, h - 1) + "px"; // 留 1px 避免 WebKit 小數像素把行尾裁掉
+  if(vt.style.height !== px) vt.style.height = px;
+}
+
+function fitVerticalText(root = document){
+  root.querySelectorAll(".vscroll").forEach(fitVerticalScroller);
+}
+
+window.addEventListener("resize", () => {
+  requestAnimationFrame(() => fitVerticalText());
+}, {passive:true});
+
 /* ══════════ 誦讀 ══════════ */
 function renderRead(){
   const el = document.getElementById("readText");
@@ -103,7 +130,9 @@ function renderRead(){
     html += (cur === "vajra") ? esc(seg.join("")) : esc(seg.join("。") + "。");
   });
   el.innerHTML = html;
-  document.querySelector("#view-read .vscroll").scrollLeft = 999999;
+  const sc = document.querySelector("#view-read .vscroll");
+  fitVerticalScroller(sc);
+  sc.scrollLeft = 999999;
 }
 
 /* ══════════ 題目佇列 ══════════ */
@@ -214,12 +243,16 @@ function renderSeam(){
 /* 共用：翻卡＋評分 */
 function wireCard(box, mode, item){
   const wrap = box.querySelector("#ansWrap");
+  fitVerticalText(box);
   const hintBtn = box.querySelector("#hintBtn");
   if(hintBtn) hintBtn.onclick = () => { box.querySelector("#hintChar").hidden = false; hintBtn.hidden = true; };
   box.querySelector(".flipbtn").onclick = () => {
     wrap.classList.add("showing");
     box.querySelector("#flipRow").style.display = "none";
     box.querySelector("#gradeRow").style.display = "flex";
+    fitVerticalText(box);
+    const sc = box.querySelector(".ansreveal .vscroll");
+    if(sc) sc.scrollLeft = 999999;
   };
   const q = getQueue(mode);
   const advance = (g) => {
