@@ -19,7 +19,6 @@ body{
   display:flex;flex-direction:column;
   /* iOS 動態視窗高度，避免用 100% 時面板塌陷 */
   height:100vh;height:100dvh;
-  padding-bottom:env(safe-area-inset-bottom);
   overflow:hidden;
   -webkit-text-size-adjust:100%;
 }
@@ -56,16 +55,19 @@ main{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 .vscroll{
   position:absolute;inset:10px;
   overflow-x:auto;overflow-y:hidden;
-  display:flex;justify-content:flex-start;
 }
 .vtext{
   writing-mode:vertical-rl;
-  height:100%;
-  /* 內容未超寬時靠右（直排起讀邊）；超寬時 auto margin 歸零，維持可捲動 */
-  margin-left:auto;
+  /* 不以正交 flex item 計算行高，避免新版 WebKit 放大後裁掉行尾。 */
+  width:max-content;min-width:100%;
+  height:calc(100% - 1px);
+  margin:0;
   font-size:22px;line-height:2.0;
   letter-spacing:.12em;
-  padding:8px 4px;
+  padding-block:4px;
+  padding-inline:8px;
+  overflow-wrap:anywhere;
+  line-break:strict;
   color:var(--gold);
 }
 .vtext .segbreak{display:inline-block;height:1.6em}

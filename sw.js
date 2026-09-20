@@ -1,6 +1,6 @@
 /* 持誦 · Service Worker：快取全部資產，離線可用；上線時背景更新 */
 "use strict";
-const CACHE = "chisong-v2";
+const CACHE = "chisong-v3";
 const ASSETS = [
   "./",
   "./index.html",
