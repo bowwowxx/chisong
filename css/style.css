@@ -28,14 +28,14 @@ button{font-family:inherit;cursor:pointer}
 /* ── 頂列：經別切換 ── */
 header{
   padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
   border-bottom:1px solid var(--gold-line);
 }
-.brand{font-size:15px;letter-spacing:.35em;color:var(--gold-dim)}
-.sutra-switch{display:flex;border:1px solid var(--gold-line);border-radius:8px;overflow:hidden}
+.brand{font-size:15px;letter-spacing:.35em;color:var(--gold-dim);flex-shrink:0}
+.sutra-switch{display:flex;max-width:100%;margin-left:auto;border:1px solid var(--gold-line);border-radius:8px;overflow:hidden}
 .sutra-switch button{
   background:none;border:none;color:var(--mut);
-  padding:8px 14px;font-size:15px;letter-spacing:.1em;
+  padding:8px 10px;font-size:15px;letter-spacing:.1em;white-space:nowrap;
 }
 .sutra-switch button.on{background:var(--gold);color:var(--ink);font-weight:700}
 

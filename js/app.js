@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   持誦 · 金剛經與大悲咒背誦
+   持誦 · 經文背誦
    經文資料放在 data/*.json，由此檔載入後建構練習單位
    ══════════════════════════════════════════════ */
 "use strict";
@@ -7,7 +7,8 @@
 /* ══════════ 資料載入 ══════════ */
 const SUTRAS = {};          // key -> built sutra
 const RAW = {};             // key -> raw json
-let dataReady = {vajra:false, dabei:false};
+const SUTRA_KEYS = ["vajra", "dabei", "marici"];
+const dataReady = {};
 
 function fetchSutra(key){
   return fetch("data/" + key + ".json")
@@ -33,8 +34,8 @@ function mergeUnits(seg){
 }
 
 function buildSutra(key, json){
-  if(key === "vajra"){
-    const segs = json.segs.map(mergeUnits);
+  if(json.segs){
+    const segs = json.segs.map(seg => Array.isArray(seg) ? seg : mergeUnits(seg));
     const units = []; segs.forEach((us, si) => us.forEach(u => units.push({t:u, seg:si})));
     return {key, name:json.name, segs, units, segCount:segs.length, drills:[]};
   }
@@ -47,6 +48,10 @@ function buildSutra(key, json){
     units.push({t:l, seg:si});
   });
   return {key, name:json.name, segs, units, segCount:segs.length, drills:json.drills, lines:json.lines};
+}
+
+function segmentText(s, i){
+  return s.lines ? s.segs[i].join("。") + "。" : s.segs[i].join("");
 }
 
 /* ══════════ 儲存層（localStorage，失敗退回記憶體） ══════════ */
@@ -124,11 +129,15 @@ function renderRead(){
   const s = SUTRAS[cur];
   el.style.fontSize = readFont + "px";
   let html = "";
+  const raw = RAW[cur];
+  if(raw.title) html += esc(raw.title) + '<span class="segbreak"></span>';
+  if(raw.translator) html += esc(raw.translator) + '<span class="segbreak"></span>';
   s.segs.forEach((seg, i) => {
     if(i > 0) html += '<span class="segbreak"></span>';
     if(cur === "dabei") html += '<span class="segno">' + "一二三四"[i] + '</span>';
-    html += (cur === "vajra") ? esc(seg.join("")) : esc(seg.join("。") + "。");
+    html += esc(segmentText(s, i));
   });
+  if(raw.colophon) html += '<span class="segbreak"></span>' + esc(raw.colophon);
   el.innerHTML = html;
   const sc = document.querySelector("#view-read .vscroll");
   fitVerticalScroller(sc);
@@ -175,7 +184,7 @@ function renderRecall(){
   const q = getQueue("recall");
   if(!q.length){ box.innerHTML = doneHTML(); bindDone(box, "recall"); return; }
   const item = q[0], s = SUTRAS[cur];
-  const segText = cur === "vajra" ? s.segs[item.seg].join("") : s.segs[item.seg].join("。") + "。";
+  const segText = segmentText(s, item.seg);
   const cue = item.seg === 0 ? "（全經開頭）" : lastUnitOfSeg(item.seg - 1);
   const first = segText[0];
   box.innerHTML = `
@@ -199,8 +208,7 @@ function renderRecall(){
 function lastUnitOfSeg(si){
   const s = SUTRAS[cur];
   const us = s.segs[si];
-  if(cur === "vajra") return us[us.length-1];
-  return us[us.length-1] + "。";
+  return us[us.length-1] + (s.lines ? "。" : "");
 }
 
 /* ══════════ 接縫 ══════════ */
@@ -363,7 +371,7 @@ function exportBackup(){
   const payload = {
     app: "chisong",
     exported: new Date().toISOString(),
-    data: {[PKEY]: store.get(PKEY), [FKEY]: store.get(FKEY)}
+    data: {[PKEY]: PROG, [FKEY]: FISH}
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
   const a = document.createElement("a");
@@ -407,16 +415,14 @@ function render(view){
 
 function switchSutra(k){
   cur = k;
-  document.getElementById("sw-vajra").classList.toggle("on", k === "vajra");
-  document.getElementById("sw-dabei").classList.toggle("on", k === "dabei");
-  document.getElementById("navDrill").hidden = (k === "vajra");
-  if(k === "vajra" && curView === "drill") curView = "seam";
+  SUTRA_KEYS.forEach(key => document.getElementById("sw-" + key).classList.toggle("on", k === key));
+  document.getElementById("navDrill").hidden = (k !== "dabei");
+  if(k !== "dabei" && curView === "drill") curView = "seam";
   render(curView);
 }
 
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => render(b.dataset.v));
-document.getElementById("sw-vajra").onclick = () => switchSutra("vajra");
-document.getElementById("sw-dabei").onclick = () => switchSutra("dabei");
+SUTRA_KEYS.forEach(key => document.getElementById("sw-" + key).onclick = () => switchSutra(key));
 document.getElementById("boundaryOnly").onclick = function(){
   boundaryOnly = !boundaryOnly;
   this.classList.toggle("on", boundaryOnly);
@@ -542,16 +548,17 @@ fishBtn.onclick = () => {
   setTimeout(() => fishBtn.classList.remove("hit"), 150);
 };
 
-/* ══════════ 啟動：兩份經文平行載入，金剛經到了立刻先畫 ══════════ */
-fetchSutra("vajra")
-  .then(() => { if(cur === "vajra") render(curView); })
-  .catch(() => {
-    document.getElementById("readText").textContent =
-      "經文載入失敗。若是直接雙擊開啟本檔（file://），瀏覽器會擋 fetch；請部署到 GitHub Pages 或本機起個 http 伺服器。";
-  });
-fetchSutra("dabei")
-  .then(() => { if(cur === "dabei") render(curView); })
-  .catch(() => {});
+/* ══════════ 啟動：各經平行載入，目前選取的經文到了立刻先畫 ══════════ */
+SUTRA_KEYS.forEach(key => {
+  fetchSutra(key)
+    .then(() => { if(cur === key) render(curView); })
+    .catch(() => {
+      if(cur !== key) return;
+      const message = "經文載入失敗。請確認網路後重新載入；若是直接雙擊開啟本檔（file://），請部署到 GitHub Pages 或本機起個 http 伺服器。";
+      const box = document.querySelector(".view.on .card, .view.on .stats, .view.on .vtext");
+      if(box) box.textContent = message;
+    });
+});
 
 /* ══════════ Service Worker：離線快取（需 https 或 localhost） ══════════ */
 if("serviceWorker" in navigator){

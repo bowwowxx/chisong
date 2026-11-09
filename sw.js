@@ -1,13 +1,14 @@
 /* 持誦 · Service Worker：快取全部資產，離線可用；上線時背景更新 */
 "use strict";
-const CACHE = "chisong-v4";
+const CACHE = "chisong-v5";
 const ASSETS = [
   "./",
   "./index.html",
   "./css/style.css",
   "./js/app.js",
   "./data/vajra.json",
-  "./data/dabei.json"
+  "./data/dabei.json",
+  "./data/marici.json"
 ];
 
 self.addEventListener("install", e => {
