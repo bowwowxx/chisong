@@ -71,6 +71,14 @@ main{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
   color:var(--gold);
 }
 .vtext .segbreak{display:inline-block;height:1.6em}
+/* 摩利支天經：各段另起直行；經題、譯者與卷尾題分開排。 */
+.vtext .sutra-title,.vtext .sutra-translator,
+.vtext .sutra-paragraph,.vtext .sutra-colophon{
+  margin:0;
+}
+.vtext .sutra-title{font-weight:700}
+.vtext .sutra-translator{padding-inline-start:2em}
+.vtext .sutra-colophon{margin:0;padding-inline-start:2em}
 /* 捲動時最右可見行以朱砂標示（--g1/--g2 由 JS 依捲動位置更新） */
 .vtext.scrolling{
   color:transparent;

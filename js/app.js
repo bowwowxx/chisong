@@ -54,6 +54,14 @@ function segmentText(s, i){
   return s.lines ? s.segs[i].join("。") + "。" : s.segs[i].join("");
 }
 
+function segmentHTML(s, i){
+  // 咒文逐句另起直行；練習單位與進度索引不受閱讀排版影響。
+  if(RAW[s.key].verseSegments?.includes(i + 1)){
+    return s.segs[i].map(esc).join("<br>");
+  }
+  return esc(segmentText(s, i));
+}
+
 /* ══════════ 儲存層（localStorage，失敗退回記憶體） ══════════ */
 const memStore = {};
 let LS = null;
@@ -130,14 +138,19 @@ function renderRead(){
   el.style.fontSize = readFont + "px";
   let html = "";
   const raw = RAW[cur];
-  if(raw.title) html += esc(raw.title) + '<span class="segbreak"></span>';
-  if(raw.translator) html += esc(raw.translator) + '<span class="segbreak"></span>';
+  const paragraphs = cur === "marici";
+  if(raw.title) html += '<p class="sutra-title">' + esc(raw.title) + '</p>';
+  if(raw.translator) html += '<p class="sutra-translator">' + esc(raw.translator) + '</p>';
   s.segs.forEach((seg, i) => {
+    if(paragraphs){
+      html += '<p class="sutra-paragraph">' + segmentHTML(s, i) + '</p>';
+      return;
+    }
     if(i > 0) html += '<span class="segbreak"></span>';
     if(cur === "dabei") html += '<span class="segno">' + "一二三四"[i] + '</span>';
     html += esc(segmentText(s, i));
   });
-  if(raw.colophon) html += '<span class="segbreak"></span>' + esc(raw.colophon);
+  if(raw.colophon) html += '<p class="sutra-colophon">' + esc(raw.colophon) + '</p>';
   el.innerHTML = html;
   const sc = document.querySelector("#view-read .vscroll");
   fitVerticalScroller(sc);
@@ -197,7 +210,7 @@ function renderRecall(){
         <button class="chipbtn" id="hintBtn">提示首字</button>
         <div class="hintchar" id="hintChar" hidden>${esc(first)}</div>
       </div>
-      <div class="ansreveal"><div class="vscroll"><div class="vtext" style="font-size:20px">${esc(segText)}</div></div></div>
+      <div class="ansreveal"><div class="vscroll"><div class="vtext" style="font-size:20px">${segmentHTML(s, item.seg)}</div></div></div>
     </div>
     <div class="actions" id="flipRow"><button class="flipbtn">翻 開 對 照</button></div>
     <div class="actions gradebar" id="gradeRow" style="display:none">
